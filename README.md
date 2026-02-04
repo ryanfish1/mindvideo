@@ -1,8 +1,20 @@
 # MindVideo
 
-AI驱动的认知科普视频生成系统
+<div align="center">
 
-基于 DeepSeek + IndexTTS + Pexels + FFmpeg 的自动化视频生成工具。
+![MindVideo](https://img.shields.io/badge/MindVideo-V1.1-blue)
+![Python](https://img.shields.io/badge/Python-3.10+-green)
+![License](https://img.shields.io/badge/License-MIT-yellow)
+
+**AI驱动的认知科普视频生成系统**
+
+基于 DeepSeek + IndexTTS + Pexels + FFmpeg 的自动化视频生成工具
+
+[快速开始](#快速开始) • [功能特点](#功能特点) • [演示视频](#演示视频) • [常见问题](#常见问题)
+
+</div>
+
+---
 
 ## 功能特点
 
@@ -26,7 +38,7 @@ AI驱动的认知科普视频生成系统
 
 ```bash
 # 克隆项目
-git clone https://github.com/yourusername/mindvideo.git
+git clone https://github.com/ryanfish1/mindvideo.git
 cd mindvideo
 
 # 安装 Python 依赖
@@ -64,6 +76,32 @@ python -m uvicorn backend.main:app --reload
 ```
 
 访问：http://localhost:8000 | API文档：http://localhost:8000/docs
+
+## 演示视频
+
+### V1.1 示例 - 锚定效应
+
+> "你这辈子花的每一笔冤枉钱，其实都是你心甘情愿掏出来的..."
+
+**文案内容**: 讲解锚定效应（Anchoring Effect）这种心理机制如何影响消费决策
+
+**生成配置**:
+- 情感: neutral（中性平静）
+- 语速: 1.25x
+- 音量: 1.5x
+- 时长: 37.9秒
+- 场景数: 12个
+
+**技术特点**:
+- ✅ 精确视频裁剪（完全匹配音频长度）
+- ✅ AI智能视频匹配（理解语义生成搜索词）
+- ✅ 重新编码防卡顿（统一30fps）
+
+### V1.0 示例 - 省钱技巧
+
+**生成配置**: 相同配置，不同文案内容
+
+---
 
 ## 使用示例
 
@@ -202,13 +240,13 @@ TTS_SPEED = 1.25
 TTS_VOLUME = 1.5
 ```
 
+## 贡献
+
+欢迎提交 Issue 和 Pull Request！
+
 ## 许可证
 
-MIT License
-
-## 许可证
-
-MIT License
+本项目采用 [MIT License](LICENSE) 开源协议。
 
 ## 致谢
 
