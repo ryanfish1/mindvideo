@@ -1,0 +1,115 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+*.manifest
+*.spec
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual Environment
+venv/
+ENV/
+env/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# 项目特定
+storage/cache/*
+storage/output/*
+storage/projects/*
+!storage/.gitkeep
+
+# 索引TTS模型（23GB，不提交）
+index-tts-windows/
+*.pth
+*.pt
+*.ckpt
+*.safetensors
+
+# 敏感信息
+.env
+.env.local
+*.key
+secrets/
+
+# 日志
+*.log
+logs/
+
+# 临时文件
+*.tmp
+*.bak
+*.swp
+temp/
+tmp/
+
+# 测试
+.pytest_cache/
+.coverage
+htmlcov/
+
+# 打包输出
+packaging/dist/
+packaging/build/
+*.exe
+
+# GPT-SoVITS（旧版TTS，已废弃）
+GPT-SoVITS/
+GPT-SoVITS-Windows/
+*.7z
+*.zip
+install_gpt_sovits.bat
+
+# 前端（待开发）
+frontend/
+
+# 大文件和临时
+nul
+*.wav
+*.mp4
+*.mp3
+
+# 开发日志
+DEVELOPMENT_LOG.md
+SESSION_LOG.md
+WORK_STATE.md
+SILICONFLOW_SETUP.md
+TRAINING_GUIDE.md
+
+# 录音相关
+record.ps1
+record.py
+record_audio.py
+simple_recorder.py
+diagnose_vocu.py
+auto_train.py
+auto_train_gradio.py
+
+# 旧配置文件
+config.toml

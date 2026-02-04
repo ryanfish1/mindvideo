@@ -1,0 +1,32 @@
+# Docker Compose 配置
+version: '3.8'
+
+services:
+  mindvideo:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      # 挂载IndexTTS模型目录（避免打包大文件）
+      - G:/index/index-tts-windows:/app/index-model:ro
+      - ./storage:/app/storage
+      - ./backend/integrations/indextts_server.py:/app/indextts_server.py
+    environment:
+      - INDEX_TTS_PATH=/app/index-model
+      - PYTHONPATH=/app
+    command: |
+      bash -c "
+      cd /app/index-model && python indextts_server.py --port 7861 --host 0.0.0.0 &
+      cd /app && python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000
+      "
+
+  # 可选：添加Nginx反向代理
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./storage:/app/storage:ro
+    depends_on:
+      - mindvideo

@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="zh-CN" translate="no">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
+    />
+       <script>
+  window.APP_REGION = 'CN';
+
+  </script>
+  <link rel="icon" href="https://cdn.apifox.com/logo/apifox-logo-256.png" />
+<link rel="dns-prefetch" href="https://cdn.apifox.com" />
+<link rel="dns-prefetch" href="https://cdn.apifox.cn" />
+<link rel="dns-prefetch" href="https://api.apifox.com" />
+<link rel="dns-prefetch" href="https://api.apifox.cn" />
+<link rel="preconnect" href="https://api.apifox.com" />
+<link rel="preconnect" href="https://api.apifox.cn" />
+  <script>
+  (function () {
+    let currentIsPdv =
+      window.security_IS_PRIVATIZATION_DEPLOYMENT === 'true' ||
+      (window.process ? window.process.env.IS_PRIVATIZATION_DEPLOYMENT === 'true' : false);
+    if (window.isDesktop) {
+      if (process.argv) {
+        const searchPrefix = '--is-pdv-key=';
+        for (const argItem of process.argv) {
+          if (argItem.startsWith(searchPrefix) && argItem.length > searchPrefix.length) {
+            currentIsPdv = argItem.substring(searchPrefix.length) === 'true';
+            break;
+          }
+        }
+      }
+
+      if (currentIsPdv) {
+        return;
+      }
+    }
+
+    var config = {
+      aliLogHost: 'cn-hangzhou.log.aliyuncs.com',
+      aliLogProject: 'apifox',
+      aliLogLogStore: 'desktop-app-error',
+    };
+
+    function AliLogTracker() {
+      this.uri =
+        'https://' +
+        config.aliLogProject +
+        '.' +
+        config.aliLogHost +
+        '/logstores/' +
+        config.aliLogLogStore +
+        '/track?APIVersion=0.6.0';
+      this.params = new Array();
+      this.httpRequest = new XMLHttpRequest();
+    }
+    AliLogTracker.prototype.push = function (key, value) {
+      if (!key || !value) {
+        return;
+      }
+      this.params.push(key);
+      this.params.push(value);
+    };
+    AliLogTracker.prototype.logger = function () {
+      var url = this.uri;
+      var k = 0;
+      while (this.params.length > 0) {
+        if (k % 2 == 0) {
+          url += '&' + encodeURIComponent(this.params.shift());
+        } else {
+          url += '=' + encodeURIComponent(this.params.shift());
+        }
+        ++k;
+      }
+      try {
+        this.httpRequest.open('GET', url, true);
+        this.httpRequest.send(null);
+      } catch (ex) {
+        if (window && window.console && typeof window.console.log === 'function') {
+          console.log('Failed to log to ali log service because of this exception:' + ex);
+          console.log('Failed log data:', url);
+        }
+      }
+    };
+
+    window.errorReport = function (error, info) {
+      try {
+        if (false) {
+          return;
+        }
+        var logger = new AliLogTracker();
+        if (error) {
+          if (error instanceof Error) {
+            logger.push('name', error.name || '');
+            logger.push('message', error.message || '');
+            logger.push('stack', JSON.stringify(error.stack) || '');
+          } else {
+            logger.push('message', error);
+          }
+        }
+        // logger.push('projectId', getCurrentProjectId());
+        logger.push('userAgent', navigator.userAgent);
+        logger.push('__topic__', window.isDesktop ? 'desktop' : 'web');
+        if (info) {
+          if (info.stack) {
+            logger.push('info-stack', JSON.stringify(info.stack));
+            delete info.stack;
+          } else if (info.errorObject && info.errorObject.stack) {
+            logger.push('info-stack', JSON.stringify(info.errorObject.stack));
+          }
+          try {
+            logger.push('info', JSON.stringify(info));
+          } catch (e) {}
+        }
+        logger.logger();
+      } catch (e) {}
+    };
+
+    function needShowNotification(message) {
+      var ignoreError = ['ResizeObserver loop limit exceeded'];
+      return ignoreError.every((rule) => message.indexOf(rule) === -1);
+    }
+
+    function handleError(info) {
+      if (!info.message || needShowNotification(info.message)) {
+        errorReport(null, info);
+      }
+      return false;
+    }
+
+    // å¨å±çå¬ onerror
+    window.onerror = (message, file, line, column, errorObject) => {
+      try {
+        const info = {
+          message,
+          file,
+          line,
+          column,
+          errorObject,
+        };
+        handleError(info);
+      } catch (e) {}
+      return false;
+    };
+
+    window.addEventListener('unhandledrejection', function (event) {
+      try {
+        const error = event.reason;
+        const info = {};
+        if (error && error.message) {
+          info.message = error.message;
+          info.stack = error.stack;
+        } else if (error && error.toString) {
+          info.message = error.toString();
+          info.reason = '' + error;
+        }
+        handleError(info);
+      } catch (e) {}
+    });
+  })();
+  </script>
+<script src="https://cdn.apifox.com/static/js/react/17.0.2/umd/react.production.min.js"></script>
+<script src="https://cdn.apifox.com/static/js/react-dom/17.0.2/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.apifox.com/static/js/lodash.js/4.17.21/lodash.min.js"></script>
+<script src="https://cdn.apifox.com/www/assets/js/apifox-app-event-tracking.min.js" defer=""></script>
+<script>
+      window.eventTrackingAppVersion='2.8.3-alpha.1'
+      window.eventTracking = {
+          dataLayer: []
+      }
+      window.eventTracking.report = function(){
+          window.eventTracking.dataLayer.push(arguments);
+      }
+    </script>
+  
+    <title>Apifox</title>
+    <style>
+      html[data-desktop]:not([data-global-mask]) .ui-modal-mask {
+        border-top: 1px solid var(--ui-border-color-base);
+      }
+
+      html,
+      body {
+        width: 100vw !important;
+        height: 100vh !important;
+        overflow: hidden;
+        font-size: 16px;
+      }
+
+      body {
+        --safe-window-control-width: 0px;
+        --safe-window-control-height: 48px;
+      }
+
+      /* Styling of window frame and titlebar */
+      body.body-right-traffic-light {
+        position: relative;
+        height: 100%;
+        margin: 0;
+        overflow-y: hidden;
+
+        --safe-window-control-width: 63px;
+      }
+
+      body.body-bordered-for-desktop-windows8to10 {
+        border-left: 1px solid rgba(0, 0, 0, 0.3);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+        border-right: 1px solid rgba(0, 0, 0, 0.3);
+      }
+
+      body.body-right-traffic-light .body-right-traffic-light-no-drag-adapt {
+        -webkit-app-region: no-drag;
+      }
+
+      #titlebar {
+        position: absolute;
+        top: 0px;
+        left: calc(100vw - 78px);
+        /* 100vw - (90px - 12px) */
+        z-index: 99;
+        /* z-index: 2147483647; */
+        display: none;
+        width: var(--safe-window-control-width);
+        height: var(--safe-window-control-height);
+        user-select: none;
+      }
+
+      .body-maximized #titlebar {
+        padding: 0;
+      }
+
+      body.body-maximized {
+        border: 0px;
+      }
+
+      #window-controls {
+        display: grid;
+        grid-template-columns: repeat(3, 21px);
+        height: var(--safe-window-control-height);
+      }
+
+      #window-controls {
+        -webkit-app-region: no-drag;
+      }
+
+      #window-controls .button {
+        display: flex;
+        grid-row: 1 / span 1;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        border-radius: 0.375rem;
+        user-select: none;
+        -webkit-app-region: no-drag;
+      }
+
+      #window-controls .button .icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 21px;
+        height: 21px;
+        font-size: 18px;
+        border-radius: var(--ui-border-radius-sm);
+        fill: currentColor;
+        -webkit-app-region: no-drag;
+      }
+
+      #window-controls .button:hover .icon {
+        color: var(--ui-heading-color);
+        background-color: rgba(var(--ui-legacy-secondary-p), 0.12);
+      }
+
+      #window-controls #close-button:hover .icon {
+        color: white;
+        background: #e81123 !important;
+      }
+
+      #window-controls #close-button:active .icon {
+        color: white;
+        background: #f1707a !important;
+      }
+
+      #min-button {
+        grid-column: 1;
+      }
+
+      #max-button,
+      #restore-button {
+        grid-column: 2;
+      }
+
+      #close-button {
+        grid-column: 3;
+      }
+
+      #restore-button {
+        display: none !important;
+      }
+
+      .body-maximized #restore-button {
+        display: flex !important;
+      }
+
+      .body-maximized #max-button {
+        display: none;
+      }
+    </style>
+    <script>
+      window.__documentStartTime = new Date().getTime();
+    </script>
+    <script type="text/javascript">
+      window.isDesktop = navigator.userAgent.toLowerCase().indexOf('electron') >= 0;
+
+      document.addEventListener('keydown', function (e) {
+        var keyCode = e.keyCode || e.which;
+        var ctrlKey = e.ctrlKey || e.metaKey;
+        var tagName = e.target.tagName;
+        var defaultPrevented = e.target.tagName;
+        if (ctrlKey && keyCode === 65 && ['DIV', 'BODY'].includes(tagName)) {
+          e.preventDefault();
+          window.event.returnValue = false;
+        }
+        if (ctrlKey && keyCode === 83) {
+          e.preventDefault();
+        }
+      });
+      // Identify mac os
+      if (navigator.userAgent.indexOf('Mac OS X') !== -1) {
+        document.documentElement.setAttribute('platform', 'mac');
+      }
+    </script>
+    <script>
+      (function () {
+        if (!window.isDesktop) {
+          return;
+        }
+        const electron = require('electron');
+        if (!electron) {
+          return;
+        }
+        const webUtils = electron.webUtils;
+        if (
+          webUtils &&
+          typeof webUtils === 'object' &&
+          typeof webUtils.getPathForFile === 'function' &&
+          !('path' in File.prototype)
+        ) {
+          Object.defineProperty(File.prototype, 'path', {
+            get() {
+              return webUtils.getPathForFile(this);
+            },
+          });
+        }
+
+        const remote = window.require('@electron/remote');
+
+        const win = remote.getCurrentWindow();
+
+        document.onreadystatechange = (event) => {
+          if (window.isDesktop) {
+            document.documentElement.setAttribute('data-desktop', true);
+          }
+
+          if (document.readyState == 'interactive' || document.readyState == 'complete') {
+            document.body.classList.add('body-os-' + process.platform);
+            if (
+              process.platform !== 'darwin' ||
+              (process.env && process.env.NODE_ENV === 'development')
+            ) {
+              document.body.classList.add('body-right-traffic-light');
+              const osVersion = require('os')?.release();
+              if (
+                process.platform === 'win32' &&
+                (osVersion.startsWith('6.2') ||
+                  osVersion.startsWith('6.3') ||
+                  osVersion.startsWith('10.'))
+              ) {
+                document.body.classList.add('body-bordered-for-desktop-windows8to10');
+              }
+            }
+          }
+        };
+
+        function handleWindowControls() {
+          document.getElementById('min-button').addEventListener('click', (event) => {
+            win.minimize();
+          });
+
+          document.getElementById('max-button').addEventListener('click', (event) => {
+            win.maximize();
+            try {
+              win.focus();
+            } catch (ignore) {}
+          });
+
+          document.getElementById('restore-button').addEventListener('click', (event) => {
+            try {
+              win.focus();
+            } catch (ignore) {}
+            require('electron').ipcRenderer.send('WindowAction.EnsureWindowUnMaximize');
+          });
+
+          document.getElementById('close-button').addEventListener('click', (event) => {
+            const webContent = remote.getCurrentWebContents();
+            if (webContent && webContent.isDevToolsOpened()) {
+              webContent.closeDevTools();
+            }
+            win.close();
+          });
+
+          const trackedListeners = [];
+          function addTrackedWindowListener(win, event, handler) {
+            try {
+              win.on(event, handler);
+            } catch (ignore) {}
+            trackedListeners.push({ event: event, handler: handler });
+          }
+
+          function removeWindowTrackedListeners(win) {
+            try {
+              for (listener of trackedListeners) {
+                win.removeListener(listener.event, listener.handler);
+              }
+            } catch (ignore) {}
+          }
+          window.onbeforeunload = (event) => {
+            removeWindowTrackedListeners(win);
+          };
+
+          function toggleMaxRestoreButtons() {
+            if (win.isMaximized()) {
+              if (!document.body.classList.contains('body-maximized')) {
+                document.body.classList.add('body-maximized');
+              }
+            } else {
+              if (document.body.classList.contains('body-maximized')) {
+                document.body.classList.remove('body-maximized');
+              }
+            }
+          }
+          toggleMaxRestoreButtons();
+          addTrackedWindowListener(win, 'restore', toggleMaxRestoreButtons);
+          addTrackedWindowListener(win, 'resize', toggleMaxRestoreButtons);
+          addTrackedWindowListener(win, 'move', toggleMaxRestoreButtons);
+          addTrackedWindowListener(win, 'maximize', toggleMaxRestoreButtons);
+          addTrackedWindowListener(win, 'unmaximize', toggleMaxRestoreButtons);
+        }
+      })();
+    </script>
+    <!-- <script>
+    var _hmt = _hmt || [];
+
+  </script> -->
+  <script defer src="https://cdn.apifox.com/mirror-app/66493.b72ceaed.js"></script><script defer src="https://cdn.apifox.com/mirror-app/30354.8f19e5ca.js"></script><script defer src="https://cdn.apifox.com/mirror-app/79535.fa9b6edd.js"></script><script defer src="https://cdn.apifox.com/mirror-app/41675.64ce8784.js"></script><script>
+              (function() {
+                const appSupportedLanguages = ["zh-CN","en-US"];
+                const userLocaleKey = 'common.userLocale';
+                function autoCorrectUserLocale(locale) {
+                  if (!locale) {
+                    return appSupportedLanguages[0];
+                  }
+                  return (
+                    appSupportedLanguages.find(function(lang) {
+                      return lang.toLowerCase() === locale.toLowerCase();
+                    }) ||
+                    appSupportedLanguages.find(function(lang) {
+                      return lang.toLowerCase().startsWith(locale.toLowerCase().slice(0, 2));
+                    }) ||
+                    appSupportedLanguages[0]
+                  );
+                }
+                let cachedResult;
+/**
+ * @function detectUserLanguageAppBase
+ * @param {string} languageParam
+ * @param {string[]} appSupportedLanguagesParam
+ * @param {boolean} isGlobal
+ * @returns {string}
+ */
+function detectUserLanguageAppBase(languageParam, appSupportedLanguagesParam, isGlobal) {
+  if (cachedResult) {
+    return cachedResult;
+  }
+  const defaultLanguage = isGlobal ? 'en-US' : 'zh-CN';
+  const result = (() => {
+    const needExactMatchLanguage = ['zh'];
+    const language = typeof languageParam === 'string' ? languageParam : defaultLanguage;
+    const appSupportedLanguages = Array.isArray(appSupportedLanguagesParam)
+      ? appSupportedLanguagesParam
+      : [];
+    const [languageSubtag, scriptSubtagString, regionSubtagString] = language
+      .toLowerCase()
+      .split('-');
+    const regionSubtag = (() => {
+      if (languageSubtag === 'zh') {
+        if (scriptSubtagString === 'hans') {
+          return 'cn';
+        } else if (scriptSubtagString === 'hant') {
+          return 'tw';
+        }
+      }
+      return regionSubtagString || scriptSubtagString;
+    })();
+
+    const matchedLanguage =
+      appSupportedLanguages.find((x) => x.toLowerCase() === `${languageSubtag}-${regionSubtag}`) ??
+      (() => {
+        if (!regionSubtag || !needExactMatchLanguage.includes(languageSubtag)) {
+          return appSupportedLanguages.find((x) =>
+            x.toLowerCase().startsWith(`${languageSubtag}-`),
+          );
+        }
+        return undefined;
+      })();
+    return matchedLanguage || appSupportedLanguages[0] || defaultLanguage;
+  })();
+
+  cachedResult = result;
+  return result;
+}
+
+
+
+                function detectUserLanguage() {
+                  return detectUserLanguageAppBase(window.navigator.language, appSupportedLanguages, false);
+                }
+                function getLocale() {
+                  const result = autoCorrectUserLocale(
+                    (function() {
+                      try {
+                        const storageLocale = localStorage.getItem(userLocaleKey);
+                        if (storageLocale) {
+                          const res = JSON.parse(storageLocale);
+                          if (typeof res === 'string' && res !== 'undefined') {
+                            return res;
+                          }
+                        }
+                      } catch {
+                        // å¿½ç¥éè¯¯
+                      }
+                      return detectUserLanguage();
+                    })()
+                  );
+                  return result;
+                }
+                const localesMapping = {
+  "zh-CN": "locale.zh-CN.41eb641e3c0e39cc.js",
+  "en-US": "locale.en-US.a102784e8c87383b.js"
+};
+                const activeLocale = getLocale();
+                const localeAssets = localesMapping[activeLocale];
+                const script = document.createElement('script');
+                script.src = `https://cdn.apifox.com/mirror-app/${localeAssets}`;
+                script.onload = function() {
+                  // console.log('Locale script loaded:', activeLocale, window.__localeInfo.localeInfo);
+                  [{"attributes":{"defer":true,"src":"https://cdn.apifox.com/mirror-app/index.2e852100b71fc9f3.js"},"meta":{"plugin":"html-webpack-plugin"}}].forEach(item => {
+                    const s = document.createElement('script');
+                    Object.keys(item.attributes).forEach(key => {
+                      s.setAttribute(key, item.attributes[key]);
+                    });
+                    window.__activeLocale = activeLocale;
+                    document.head.insertBefore(s, document.head.firstChild);
+                  });
+                };
+                document.head.insertBefore(script, document.head.firstChild);
+              })()
+              </script><link href="https://cdn.apifox.com/mirror-app/41675.547837c0.css" rel="stylesheet"><link href="https://cdn.apifox.com/mirror-app/index.1b7829f5.css" rel="stylesheet"></head>
+
+  <body spellcheck="false">
+    <script type="text/javascript">
+      window.theme = {};
+      (() => {
+        var darkBackgroundColor = '#1b1c21';
+        var lightBackgroundColor = '#ffffff';
+        var greyBackgroundColor = '#2D2D2D';
+        var lightBrownBackgroundColor = '#F9F4E7';
+        var darkBlueBackgroundColor = '#262B33';
+
+        var defaultTheme = 'lightPurple';
+        try {
+          const themeMedia = window.matchMedia('(prefers-color-scheme: light)');
+          if (!themeMedia.matches) {
+            defaultTheme = 'darkPurple';
+          }
+        } catch (error) {
+          console.error('getDefaultTheme error', error);
+        }
+
+        var bgColor = {
+          dark: {
+            label: 'dark',
+            background: 'dark',
+            monacoEditorTheme: 'vs-dark-custom',
+            monacoEditorThemeProps: {
+              base: 'vs-dark',
+              inherit: true,
+              rules: [{ background: '#15161A' }],
+              colors: {
+                'editor.background': '#15161A',
+              },
+            },
+            rjvTheme: 'eighties',
+            recommend: true,
+            backgroundColor: darkBackgroundColor,
+            ResultChartBar: {
+              stack: ['#448b73', '#de6783', '#444444'],
+            },
+            ResultChartPie: {
+              stack: ['#4ab793', '#fc97af', '#444444'],
+              stroke: '#383838',
+            },
+            mdEditorTheme: 'dark',
+          },
+          light: {
+            label: 'light',
+            background: 'light',
+            monacoEditorTheme: 'vs',
+            rjvTheme: 'rjv-default',
+            backgroundColor: lightBackgroundColor,
+            ResultChartBar: {
+              stack: ['#46d6a0', '#f8587d', '#dddddd'],
+            },
+            ResultChartPie: {
+              stack: ['#46d6a0', '#f8587d', '#dddddd'],
+              stroke: '#fff',
+            },
+            mdEditorTheme: 'light',
+          },
+          grey: {
+            label: 'grey',
+            background: 'grey',
+            monacoEditorTheme: 'vs-dark-grey',
+            monacoEditorThemeProps: {
+              base: 'vs-dark',
+              inherit: true,
+              rules: [{ background: '#242424' }],
+              colors: {
+                'editor.background': '#242424',
+              },
+            },
+            rjvTheme: 'eighties',
+            recommend: true,
+            backgroundColor: greyBackgroundColor,
+            ResultChartBar: {
+              stack: ['#448b73', '#de6783', '#444444'],
+            },
+            ResultChartPie: {
+              stack: ['#4ab793', '#fc97af', '#444444'],
+              stroke: '#383838',
+            },
+            mdEditorTheme: 'dark',
+          },
+          lightbrown: {
+            label: 'lightBrown',
+            background: 'lightbrown',
+            monacoEditorTheme: 'vs-lightbrown-custom',
+            monacoEditorThemeProps: {
+              base: 'vs',
+              inherit: true,
+              rules: [{ background: '#f9f4e7' }],
+              colors: {
+                'editor.background': '#f9f4e7',
+              },
+            },
+            rjvTheme: 'rjv-default',
+            recommend: true,
+            backgroundColor: lightBrownBackgroundColor,
+            ResultChartBar: {
+              stack: ['#46d6a0', '#f8587d', '#dddddd'],
+            },
+            ResultChartPie: {
+              stack: ['#46d6a0', '#f8587d', '#dddddd'],
+              stroke: '#fff',
+            },
+            mdEditorTheme: 'light',
+          },
+          darkblue: {
+            label: 'darkblue',
+            background: 'darkblue',
+            monacoEditorTheme: 'vs-darkblue',
+            monacoEditorThemeProps: {
+              base: 'vs-dark',
+              inherit: true,
+              rules: [{ background: '#1E2229' }],
+              colors: {
+                'editor.background': '#1E2229',
+              },
+            },
+            rjvTheme: 'eighties',
+            recommend: true,
+            backgroundColor: darkBlueBackgroundColor,
+            ResultChartBar: {
+              stack: ['#448b73', '#de6783', '#444444'],
+            },
+            ResultChartPie: {
+              stack: ['#4ab793', '#fc97af', '#444444'],
+              stroke: '#383838',
+            },
+            mdEditorTheme: 'dark',
+          },
+        };
+        var primaryColor = {
+          purple: {
+            primary: 'purple',
+            label: 'purple',
+          },
+          cerulean: {
+            primary: 'cerulean',
+            label: 'cerulean',
+          },
+          blue: {
+            primary: 'blue',
+            label: 'blue',
+          },
+          gold: {
+            primary: 'gold',
+            label: 'gold',
+          },
+          blue2: {
+            primary: 'blue2',
+            label: 'blue2',
+          },
+          green: {
+            primary: 'green',
+            label: 'green',
+          },
+          orange: {
+            primary: 'orange',
+            label: 'orange',
+          },
+          pink: {
+            primary: 'pink',
+            label: 'pink',
+          },
+          red: {
+            primary: 'red',
+            label: 'red',
+          },
+          silver: {
+            primary: 'silver',
+            label: 'silver',
+          },
+        };
+
+        window.theme.bgColor = bgColor;
+        window.theme.map = Object.keys(bgColor).reduce((res, bg) => {
+          const bgElement = bgColor[bg];
+          for (const primary in primaryColor) {
+            var element = primaryColor[primary];
+            var value = `${bg}${primary[0].toUpperCase()}${primary.substring(1)}`;
+            res[value] = {
+              ...bgElement,
+              ...element,
+              value,
+              label: `${element.label} Â· ${bgElement.label}`,
+            };
+          }
+          return res;
+        }, {});
+
+        window.theme.change = (themeKey) => {
+          window.theme.key = themeKey;
+          if (window.isDesktop) {
+            process.env.currentTheme = themeKey;
+          }
+          localStorage.setItem('themeConfig', themeKey);
+          if (!window.theme.map[themeKey]) {
+            window.theme.key = defaultTheme;
+          }
+          var theme = window.theme.map[themeKey] || window.theme.map[defaultTheme];
+          const body = document.getElementsByTagName('html')[0];
+          body.style.backgroundColor = theme.backgroundColor;
+          body.setAttribute('theme', theme.background);
+
+          body.dataset['theme'] = theme.background;
+          body.dataset['accentColor'] = theme.primary;
+        };
+
+        var currentTheme;
+        try {
+          if (window.isDesktop && process.argv) {
+            const searchThemeKeyPrefix = '--theme-key=';
+            for (const argItem of process.argv) {
+              if (
+                argItem.startsWith(searchThemeKeyPrefix) &&
+                argItem.length > searchThemeKeyPrefix.length
+              ) {
+                currentTheme = argItem.substring(searchThemeKeyPrefix.length);
+                break;
+              }
+            }
+          }
+          if (!currentTheme) {
+            currentTheme = localStorage.getItem('themeConfig') || defaultTheme;
+          }
+        } catch (e) {}
+        if (window.isDesktop) {
+          currentTheme = process.env.currentTheme || currentTheme || defaultTheme;
+        } else {
+          currentTheme = currentTheme || defaultTheme;
+        }
+
+        window.theme.change(currentTheme);
+
+        var body = document.body;
+        if (window.devicePixelRatio && window.devicePixelRatio > 1) {
+          body.className = body.className + ' retina';
+        }
+        if (navigator.userAgent.toLowerCase().indexOf('chrome') > -1) {
+          body.className = body.className + ' chrome';
+        }
+      })();
+    </script>
+    <script type="text/javascript">
+      (() => {
+        const PAGE_LOADING_WARP_STYLESHEET_ID = 'page-loading-warp-stylesheet';
+        if (window.isDesktop) {
+          const pageLoadingStyleSheet = document.createElement('style');
+          pageLoadingStyleSheet.id = PAGE_LOADING_WARP_STYLESHEET_ID;
+          pageLoadingStyleSheet.innerHTML = `.page-loading-warp-first-screen {
+            border-top: 1px solid var(--ui-border-color-split);
+          }`;
+          document.getElementsByTagName('head')[0].appendChild(pageLoadingStyleSheet);
+        }
+      })();
+    </script>
+    <noscript>Sorry, we need js to run correctly!</noscript>
+    <div id="root">
+      <style>
+        .page-loading-warp {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          min-width: 600px;
+          height: 100%;
+          min-height: 500px;
+          background-color: var(--ui-body-background);
+          -webkit-user-select: none;
+        }
+
+        .ui-spin {
+          position: absolute;
+          display: none;
+          -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+          margin: 0;
+          padding: 0;
+          color: #9373ee;
+          font-size: var(--ui-font-size-base);
+          font-variant: tabular-nums;
+          line-height: 1.5;
+          text-align: center;
+          vertical-align: middle;
+          list-style: none;
+          opacity: 0;
+          -webkit-transition: -webkit-transform 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86);
+          transition: -webkit-transform 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86);
+          transition: transform 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86);
+          transition: transform 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86),
+            -webkit-transform 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86);
+          -webkit-font-feature-settings: 'tnum';
+          font-feature-settings: 'tnum';
+        }
+
+        .ui-spin-spinning {
+          position: static;
+          display: inline-block;
+          opacity: 1;
+        }
+
+        .ui-spin-dot {
+          position: relative;
+          display: inline-block;
+          width: 20px;
+          height: 20px;
+          font-size: 20px;
+        }
+
+        .ui-spin-dot-item {
+          position: absolute;
+          display: block;
+          width: 9px;
+          height: 9px;
+          background-color: #9373ee;
+          border-radius: 100%;
+          -webkit-transform: scale(0.75);
+          -ms-transform: scale(0.75);
+          transform: scale(0.75);
+          -webkit-transform-origin: 50% 50%;
+          -ms-transform-origin: 50% 50%;
+          transform-origin: 50% 50%;
+          opacity: 0.3;
+          -webkit-animation: antSpinMove 1s infinite linear alternate;
+          animation: antSpinMove 1s infinite linear alternate;
+        }
+
+        .ui-spin-dot-item:nth-child(1) {
+          top: 0;
+          left: 0;
+        }
+
+        .ui-spin-dot-item:nth-child(2) {
+          top: 0;
+          right: 0;
+          -webkit-animation-delay: 0.4s;
+          animation-delay: 0.4s;
+        }
+
+        .ui-spin-dot-item:nth-child(3) {
+          right: 0;
+          bottom: 0;
+          -webkit-animation-delay: 0.8s;
+          animation-delay: 0.8s;
+        }
+
+        .ui-spin-dot-item:nth-child(4) {
+          bottom: 0;
+          left: 0;
+          -webkit-animation-delay: 1.2s;
+          animation-delay: 1.2s;
+        }
+
+        .ui-spin-dot-spin {
+          -webkit-transform: rotate(45deg);
+          -ms-transform: rotate(45deg);
+          transform: rotate(45deg);
+          -webkit-animation: antRotate 1.2s infinite linear;
+          animation: antRotate 1.2s infinite linear;
+        }
+
+        .ui-spin-lg .ui-spin-dot {
+          width: 32px;
+          height: 32px;
+          font-size: 32px;
+        }
+
+        .ui-spin-lg .ui-spin-dot i {
+          width: 14px;
+          height: 14px;
+        }
+
+        @media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+          .ui-spin-blur {
+            background: #fff;
+            opacity: 0.5;
+          }
+        }
+
+        @-webkit-keyframes antSpinMove {
+          to {
+            opacity: 1;
+          }
+        }
+
+        @keyframes antSpinMove {
+          to {
+            opacity: 1;
+          }
+        }
+
+        @-webkit-keyframes antRotate {
+          to {
+            -webkit-transform: rotate(405deg);
+            transform: rotate(405deg);
+          }
+        }
+
+        @keyframes antRotate {
+          to {
+            -webkit-transform: rotate(405deg);
+            transform: rotate(405deg);
+          }
+        }
+      </style>
+      <div class="page-loading-warp page-loading-warp-first-screen">
+        <div class="ui-spin ui-spin-lg ui-spin-spinning">
+          <span class="ui-spin-dot ui-spin-dot-spin">
+            <i class="ui-spin-dot-item"></i>
+            <i class="ui-spin-dot-item"></i>
+            <i class="ui-spin-dot-item"></i>
+            <i class="ui-spin-dot-item"></i>
+          </span>
+        </div>
+      </div>
+    </div>
+    <div id="titlebar">
+      <div id="window-controls">
+        <div class="button" id="min-button">
+          <div class="icon">
+            <svg width="11" height="1" viewBox="0 0 11 1">
+              <path d="m11 0v1h-11v-1z" strokeWidth=".26208" />
+            </svg>
+          </div>
+        </div>
+        <div class="button" id="max-button">
+          <div class="icon">
+            <svg width="10" height="10" viewBox="0 0 10 10">
+              <path
+                d="m10-1.6667e-6v10h-10v-10zm-1.001 1.001h-7.998v7.998h7.998z"
+                strokeWidth=".25"
+              />
+            </svg>
+          </div>
+        </div>
+        <div class="button" id="restore-button">
+          <div class="icon">
+            <svg width="11" height="11" viewBox="0 0 11 11">
+              <path
+                d="m11 8.7978h-2.2021v2.2022h-8.7979v-8.7978h2.2021v-2.2022h8.7979zm-3.2979-5.5h-6.6012v6.6011h6.6012zm2.1968-2.1968h-6.6012v1.1011h5.5v5.5h1.1011z"
+                strokeWidth=".275"
+              />
+            </svg>
+          </div>
+        </div>
+        <div class="button" id="close-button">
+          <div class="icon">
+            <svg width="12" height="12" viewBox="0 0 12 12">
+              <path
+                d="m6.8496 6 5.1504 5.1504-0.84961 0.84961-5.1504-5.1504-5.1504 5.1504-0.84961-0.84961 5.1504-5.1504-5.1504-5.1504 0.84961-0.84961 5.1504 5.1504 5.1504-5.1504 0.84961 0.84961z"
+                strokeWidth=".3"
+              />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </body>
+</html>
